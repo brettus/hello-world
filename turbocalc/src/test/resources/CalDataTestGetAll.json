@@ -1,0 +1,34 @@
+{
+    "events": [
+        {
+            "id": 1,
+            "start_datetime": "2014-01-01T09:30:00Z",
+            "end_datetime": "2014-01-01T11:00:00Z",
+            "description": "New Years Brunch",
+            "location": "That place",
+            "notes": "With your mom",
+            "tags": [
+                "relatives",
+                "brunch"
+            ],
+            "other_attendees": [
+                "your_mom@gmail.com"
+            ]
+        },
+        {
+            "id": 2,
+            "start_datetime": "2014-07-04T04:00:00Z",
+            "end_datetime": "2014-07-04T10:00:00Z",
+            "description": "4th of July Cookout",
+            "location": "The park",
+            "notes": "With your dad",
+            "tags": [
+                "relatives",
+                "fireworks"
+            ],
+            "other_attendees": [
+                "jim@yourdad.com"
+            ]
+        }
+    ]
+}

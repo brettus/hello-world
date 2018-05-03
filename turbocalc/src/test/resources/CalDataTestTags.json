@@ -1,0 +1,86 @@
+{
+    "events": [
+        {
+            "id": 1,
+            "start_datetime": "2014-01-01T10:00:00Z",
+            "end_datetime": "2014-01-01T12:00:00Z",
+            "description": "Alpha",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "alpha"
+            ],
+            "other_attendees": [
+            ]
+        },
+        {
+            "id": 2,
+            "start_datetime": "2014-01-01T10:00:00Z",
+            "end_datetime": "2014-01-01T11:00:00Z",
+            "description": "Beta",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "beta"
+            ],
+            "other_attendees": [
+            ]
+        },
+        {
+            "id": 3,
+            "start_datetime": "2014-01-01T11:00:00Z",
+            "end_datetime": "2014-01-01T12:00:00Z",
+            "description": "AlphaBeta",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "alpha", 
+                "beta"
+            ],
+            "other_attendees": [
+            ]
+        },
+        {
+            "id": 4,
+            "start_datetime": "2014-01-01T10:30:00Z",
+            "end_datetime": "2014-01-01T11:30:00Z",
+            "description": "Gamma",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "gamma"
+            ],
+            "other_attendees": [
+            ]
+        },
+        {
+            "id": 5,
+            "start_datetime": "2014-01-01T13:00:00Z",
+            "end_datetime": "2014-01-01T13:30:00Z",
+            "description": "BetaGamma",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "beta", 
+                "gamma"
+            ],
+            "other_attendees": [
+            ]
+        },
+        {
+            "id": 6,
+            "start_datetime": "2014-01-01T13:00:00Z",
+            "end_datetime": "2014-01-01T13:30:00Z",
+            "description": "AlphaBetaGamma",
+            "location": "",
+            "notes": "",
+            "tags": [
+                "alpha", 
+                "beta", 
+                "gamma"
+            ],
+            "other_attendees": [
+            ]
+        }
+    ]
+}

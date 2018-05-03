@@ -1,0 +1,88 @@
+.LiteBoxShade {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 9000;
+    background: black;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* 
+ * CSS trickery to auto-magically center content without having to know the dimensions
+ * Based on http://stackoverflow.com/a/7277724
+ */
+
+/* wrapperViewport */
+.LiteBoxRoot {
+    position: fixed;
+    z-index: 9001;
+    top: 0;
+    height: 100%;
+    left: 0;
+    width: 100%;
+}
+
+/* wrapper1 */
+.LiteBoxRoot > span {
+    position: relative;
+    display: block;
+    top: 50%;
+    margin-top: -1280px;
+    height: 2560px;
+    text-align: center;
+    line-height: 2560px;
+}
+
+/* wrapper2 */
+.LiteBoxRoot > span > span {
+    line-height: 1;
+}
+
+/* wrapper3 */
+.LiteBoxRoot > span > span > span {
+    vertical-align: middle;
+    display: inline-block;
+    background: transparent;
+    
+    /* make this the positioning root/stacking context root */
+    position: relative;
+    z-index: 0;
+    
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* closeButton */
+.LiteBoxRoot .closeButton {
+    position: absolute;
+    top: -1.25em;
+    right: -1.25em;
+    height: 1.5em;
+    width: 1.5em;
+    line-height: 1.5em;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 1.5em;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.6);
+    z-index: 2;
+    cursor: default;
+    font-weight: 900;
+}
+
+/* contentBox */
+.LiteBoxRoot .contentContainer {
+    background-color: white;
+    z-index: 1;
+}
+
+.LiteBoxRoot .contentContainer.withDropShadow {
+    box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.6);
+}
+
+.LiteBoxRoot .contentContainer.transparent {
+    background-color: transparent;
+}

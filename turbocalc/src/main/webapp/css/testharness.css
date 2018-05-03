@@ -1,0 +1,75 @@
+
+input::input-placeholder {
+  text-align: right;
+}
+input::-moz-placeholder {
+  text-align: right;
+}
+input::-webkit-input-placeholder {
+  text-align: right;
+}
+
+.event {
+	border: 1px solid black;
+	padding: 1em;
+	margin: 1em auto 1em 1em;
+	width: 25em;
+}
+
+.event .fieldLabel {
+	font-weight: bold;
+}
+
+#actionBar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#actionBar li {
+    display: inline;
+}
+
+#actionBar button {
+    margin: 0.5em;
+}
+
+.gridForm {
+    padding: 2em;
+}
+
+.gridForm .form-items {
+    padding: 1em;
+    border: 1px solid #333;
+    display: table;
+    margin-bottom: 2em;
+}
+
+.gridForm .form-item {
+    display: table-row;
+}
+
+.gridForm label {
+    display: table-cell;
+    text-align: right;
+    padding-right: 0.2em;
+    vertical-align: middle;
+    font-family: sans-serif;
+    font-size: 10pt;
+}
+
+.gridForm input:not([type=submit]), 
+.gridForm textarea {
+    display: table-cell;
+    margin: 0.4em;
+    float: left;
+}
+
+.gridForm input.invalid {
+    border: 2px solid red;
+    border-radius: 0.5em;
+}
+
+.gridForm input[type=text] {
+    padding: 0.2em;
+}
