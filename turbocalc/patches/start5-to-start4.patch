@@ -1,0 +1,485 @@
+diff --git a/src/main/java/com/example/dao/MemoryEventDAO.java b/src/main/java/com/example/dao/MemoryEventDAO.java
+index 72bfcc7..ec210cc 100644
+--- a/src/main/java/com/example/dao/MemoryEventDAO.java
++++ b/src/main/java/com/example/dao/MemoryEventDAO.java
+@@ -4,275 +4,213 @@ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.Calendar;
+ import java.util.Collections;
+-import java.util.Comparator;
+-import java.util.HashMap;
++import java.util.Iterator;
+ import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.TreeMap;
+-import java.util.TreeSet;
+ 
+ import com.example.models.Event;
+ 
+ public class MemoryEventDAO implements IEventDAO
+ {
+-	private static long nextId = 1;
+-	
+-	private static final Map<Long, Event> eventsById = Collections.synchronizedMap(new TreeMap<Long, Event>());
+-	private static final Map<String, Set<Event>> eventsByTag = Collections.synchronizedMap(new HashMap<String, Set<Event>>());
+-	
+-	public static void resetMemDB()
+-	{
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			MemoryEventDAO.nextId = 1;
+-			MemoryEventDAO.eventsById.clear();
+-			MemoryEventDAO.eventsByTag.clear();
+-		}
+-	}
+-	
+-	/**
+-	 * Adds a tag/event pair to the eventsByTag lookup table.<br>
+-	 * <br>
+-	 * MUST be called from inside a <code>synchronized(MemoryEventDAO.eventsById)</code> block
+-	 * 
+-	 * @param tag The tag to add the event to
+-	 * @param event The event to add for the tag
+-	 * @return true if this was the first event for the given tag, false otherwise
+-	 */
+-	private boolean addOrUpdateTag(final String tag, final Event event)
+-	{
+-		boolean firstOfTag = false;
+-		if(!MemoryEventDAO.eventsByTag.containsKey(tag))
+-		{
+-			MemoryEventDAO.eventsByTag.put(tag, new TreeSet<Event>(new EventIdComparator()));
+-			firstOfTag = true;
+-		}
+-		MemoryEventDAO.eventsByTag.get(tag).add(event);
+-		return firstOfTag;
+-	}
+-	
+-	
+-	@Override
+-	public List<Event> getAllEvents()
+-	{
+-		return new ArrayList<>(MemoryEventDAO.eventsById.values());
+-	}
+-	
+-	@Override
+-	public Event getEvent(final long eventID)
+-	{
+-		return MemoryEventDAO.eventsById.get(eventID);
+-	}
+-
+-	@Override
+-	public List<Event> getEventsBetweenPartial(final Calendar searchRangeStart, final Calendar searchRangeEnd)
+-	{
+-		
+-		// TODO: This is slow!  See if we can do some sort of temporal indexing.
+-		
+-		if(searchRangeStart.compareTo(searchRangeEnd) > 0)
+-		{
+-			throw new IllegalArgumentException("Start time cannot come after end time");
+-		}
+-		
+-		final List<Event> events = new ArrayList<>();
+-		
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			for(final Event event : MemoryEventDAO.eventsById.values())
+-			{
+-				
+-				// event start time is acceptable unless it is after our end time
+-				final boolean evStartGood = event.getStartDateTime().compareTo(searchRangeEnd) < 0;
+-				// event end time is acceptable unless it is before our start time
+-				final boolean evEndGood = event.getEndDateTime().compareTo(searchRangeStart) > 0;
+-				
+-				if(evStartGood && evEndGood)
+-				{
+-					events.add(event.copy());
+-				}
+-			}
+-		}
+-		
+-		return events;
+-	}
+-
+-	@Override
+-	public List<Event> getEventsBetweenComplete(final Calendar searchRangeStart, final Calendar searchRangeEnd)
+-	{
+-		
+-		// TODO: This is slow!  See if we can do some sort of temporal indexing.
+-		
+-		if(searchRangeStart.compareTo(searchRangeEnd) > 0)
+-		{
+-			throw new IllegalArgumentException("Start time cannot come after end time");
+-		}
+-		
+-		final List<Event> events = new ArrayList<>();
+-		
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			for(final Event event : MemoryEventDAO.eventsById.values())
+-			{
+-				
+-				// event start time is acceptable unless it is before our end time
+-				final boolean evStartGood = event.getStartDateTime().compareTo(searchRangeStart) >= 0;
+-				// event end time is acceptable unless it is after our end time
+-				final boolean evEndGood = event.getEndDateTime().compareTo(searchRangeEnd) <= 0;
+-				
+-				if(evStartGood && evEndGood)
+-				{
+-					events.add(event.copy());
+-				}
+-			}
+-		}
+-		
+-		return events;
+-	}
+-
+-	@Override
+-	public List<Event> getEventsByTag(final String... tags)
+-	{
+-		final List<Event> events = new ArrayList<>();
+-		
+-		if(tags.length > 0)
+-		{
+-			final List<String> tagList = Arrays.asList(tags);
+-			
+-			synchronized(MemoryEventDAO.eventsById)
+-			{
+-				
+-				// Do a first-pass filter using the tag map
+-				// eventsByTag is a HashMap, so lookups are O(1)
+-				// well, really O(key length) due to the cost of String.hashCode
+-				final String firstTag = tags[0];
+-				final Set<Event> eventsWithFirstTag = MemoryEventDAO.eventsByTag.get(firstTag);
+-				
+-				// Then check remaining tags by brute force
+-				// TODO: Could this be made faster?
+-				if(null != eventsWithFirstTag)
+-				{
+-					for(final Event event : eventsWithFirstTag)
+-					{
+-						// containsAll is O(eventTagsLen * searchTagsLen)
+-						if(event.getTags().containsAll(tagList))
+-						{
+-							events.add(event.copy());
+-						}
+-					}
+-				}
+-			}
+-		}
+-		
+-		return events;
+-	}
+-	
+-	private Event addEventWithoutModifyingId(final Event newEvent)
+-	{
+-		MemoryEventDAO.eventsById.put(newEvent.getId(), newEvent);
+-		
+-		for(final String tag : newEvent.getTags())
+-		{
+-			addOrUpdateTag(tag, newEvent);
+-		}
+-		
+-		return newEvent;
+-	}
+-
+-	@Override
+-	public Event addEvent(final Event newEvent)
+-	{
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			newEvent.setId(MemoryEventDAO.nextId);
+-			++MemoryEventDAO.nextId;
+-			addEventWithoutModifyingId(newEvent);
+-		}
+-		
+-		return newEvent;
+-	}
+-
+-	@Override
+-	public Event removeEvent(final long eventId)
+-	{
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			final Event removed = MemoryEventDAO.eventsById.remove(eventId);
+-			
+-			if(null != removed)
+-			{
+-				final Set<String> tags = removed.getTags();
+-				for(final String tag : tags)
+-				{
+-					MemoryEventDAO.eventsByTag.get(tag).remove(removed);
+-				}
+-			}
+-			
+-			return removed;
+-		}
+-	}
+-
+-	@Override
+-	public Event removeEvent(final Event event)
+-	{
+-		return removeEvent(event.getId());
+-	}
+-
+-	@Override
+-	public Event updateEvent(final Event eventToUpdate)
+-	{
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			final Event removedEvent = this.removeEvent(eventToUpdate);
+-			
+-			// only add the new event if something with the same ID previously existed
+-			if(null != removedEvent)
+-			{
+-				addEventWithoutModifyingId(eventToUpdate);
+-			}
+-			
+-			return removedEvent;
+-		}
+-	}
+-
+-	@Override
+-	public Event forceAddEvent(final Event event)
+-	{
+-		final long eventId = event.getId();
+-		
+-		
+-		synchronized(MemoryEventDAO.eventsById)
+-		{
+-			final Event previous = MemoryEventDAO.eventsById.remove(eventId);
+-			
+-			// if the event didn't already exist, we need to generate a new ID
+-			// otherwise, we can just reuse the existing one
+-			if(null == previous)
+-			{
+-				event.setId(MemoryEventDAO.nextId);
+-				++MemoryEventDAO.nextId;
+-			}
+-			addEventWithoutModifyingId(event);
+-		}
+-		
+-		return event;
+-	}
+-	
+-	
+-	// utility methods/classes
+-	
+-	/**
+-	 * IDs provide a well-defined ordering for events. Reasonable choice for a
+-	 * SortedSet<Event> where ID determines uniqueness
+-	 */
+-	private static final class EventIdComparator implements Comparator<Event>
+-	{
+-		@Override
+-		public int compare(final Event ev1, final Event ev2)
+-		{
+-			return Long.compare(ev1.getId(), ev2.getId());
+-		}
+-	}
+-
+-}
++    private static long nextId = 1;
++    private static final List<Event> events = Collections.synchronizedList(new ArrayList<Event>());
++
++    public static void resetMemDB()
++    {
++        synchronized(MemoryEventDAO.events)
++        {
++            MemoryEventDAO.nextId = 1;
++            MemoryEventDAO.events.clear();
++        }
++    }
++
++
++    @Override
++    public List<Event> getAllEvents()
++    {
++        final List<Event> events = new ArrayList<>();
++
++        synchronized(MemoryEventDAO.events)
++        {
++            for(final Event event : MemoryEventDAO.events)
++            {
++                events.add(event.copy());
++            }
++        }
++
++        return events;
++    }
++
++    @Override
++    public Event getEvent(final long eventID)
++    {
++        synchronized(MemoryEventDAO.events)
++        {
++            for(final Event event : MemoryEventDAO.events)
++            {
++                if(eventID == event.getId())
++                {
++                    return event;
++                }
++            }
++        }
++
++        return null;
++    }
++
++    @Override
++    public List<Event> getEventsBetweenPartial(final Calendar searchRangeStart, final Calendar searchRangeEnd)
++    {
++        if(searchRangeStart.compareTo(searchRangeEnd) > 0)
++        {
++            throw new IllegalArgumentException("Start time cannot come after end time");
++        }
++
++        final List<Event> events = new ArrayList<>();
++
++        synchronized(MemoryEventDAO.events)
++        {
++            for(final Event event : MemoryEventDAO.events)
++            {
++                final boolean evStartGood = event.getStartDateTime().compareTo(searchRangeEnd) < 0;
++                final boolean evEndGood = event.getEndDateTime().compareTo(searchRangeStart) > 0;
++
++                if(evStartGood && evEndGood)
++                {
++                    events.add(event.copy());
++                }
++            }
++        }
++
++        return events;
++    }
++
++    @Override
++    public List<Event> getEventsBetweenComplete(final Calendar searchRangeStart, final Calendar searchRangeEnd)
++    {
++        if(searchRangeStart.compareTo(searchRangeEnd) > 0)
++        {
++            throw new IllegalArgumentException("Start time cannot come after end time");
++        }
++
++        final List<Event> events = new ArrayList<>();
++
++        synchronized(MemoryEventDAO.events)
++        {
++            for(final Event event : MemoryEventDAO.events)
++            {
++
++                final boolean evStartGood = event.getStartDateTime().compareTo(searchRangeStart) >= 0;
++                final boolean evEndGood = event.getEndDateTime().compareTo(searchRangeEnd) <= 0;
++
++                if(evStartGood && evEndGood)
++                {
++                    events.add(event.copy());
++                }
++            }
++        }
++
++        return events;
++    }
++
++    @Override
++    public List<Event> getEventsByTag(final String... tags)
++    {
++        final List<Event> events = new ArrayList<>();
++
++        if(tags.length > 0)
++        {
++            synchronized(MemoryEventDAO.events)
++            {
++                for(final Event event : MemoryEventDAO.events)
++                {
++                    if(event.getTags().containsAll(Arrays.asList(tags)))
++                    {
++                        events.add(event.copy());
++                    }
++                }
++            }
++        }
++
++        return events;
++    }
++
++    @Override
++    public Event addEvent(final Event newEvent)
++    {
++        synchronized(MemoryEventDAO.events)
++        {
++            newEvent.setId(MemoryEventDAO.nextId);
++            ++MemoryEventDAO.nextId;
++            MemoryEventDAO.events.add(newEvent);
++        }
++
++        return newEvent;
++    }
++
++    @Override
++    public Event removeEvent(final long eventId)
++    {
++        synchronized(MemoryEventDAO.events)
++        {
++            final Iterator<Event> eventIterator = MemoryEventDAO.events.iterator();
++
++            while(eventIterator.hasNext())
++            {
++                final Event event = eventIterator.next();
++                if(eventId == event.getId())
++                {
++                    eventIterator.remove();
++                    return event;
++                }
++            }
++        }
++
++        return null;
++    }
++
++    @Override
++    public Event removeEvent(final Event event)
++    {
++        return removeEvent(event.getId());
++    }
++
++    @Override
++    public Event updateEvent(final Event eventToUpdate)
++    {
++        final Event removedEvent = this.removeEvent(eventToUpdate);
++
++        // only add the new event if something with the same ID previously existed
++        if(null != removedEvent)
++        {
++            MemoryEventDAO.events.add(eventToUpdate);
++        }
++
++        return removedEvent;
++    }
++
++    @Override
++    public Event forceAddEvent(final Event eventToAdd)
++    {
++        final long eventId = eventToAdd.getId();
++
++        synchronized(MemoryEventDAO.events)
++        {
++            final Iterator<Event> eventIterator = MemoryEventDAO.events.iterator();
++
++            while (eventIterator.hasNext())
++            {
++                final Event event = eventIterator.next();
++                if (eventId == event.getId())
++                {
++                    eventIterator.remove();
++                }
++            }
++
++            eventToAdd.setId(MemoryEventDAO.nextId);
++            ++MemoryEventDAO.nextId;
++            MemoryEventDAO.events.add(eventToAdd);
++        }
++
++        return eventToAdd;
++    }
++}
+\ No newline at end of file

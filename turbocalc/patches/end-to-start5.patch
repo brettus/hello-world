@@ -1,0 +1,68 @@
+diff --git a/src/main/java/com/example/servlet/EventServiceServlet.java b/src/main/java/com/example/servlet/EventServiceServlet.java
+index a1be4d1..f70dd2e 100644
+--- a/src/main/java/com/example/servlet/EventServiceServlet.java
++++ b/src/main/java/com/example/servlet/EventServiceServlet.java
+@@ -58,63 +58,10 @@ public class EventServiceServlet extends BaseRestServlet {
+ 		resp.setContentType(MimeTypes.TEXT_PLAIN);
+ 	}
+ 	
+-	public void getAllEvents(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+-		final IEventDAO dao = getDAO();
+-		final EventList events = new EventList(dao.getAllEvents());
+-		
+-		resp.setStatus(HttpServletResponse.SC_OK);
+-		resp.setContentType(MimeTypes.APPLICATION_JSON);
+-
+-		final PrintWriter respBody = resp.getWriter();
+-		final String json = toJson(events);
+-		respBody.write(json);
+-		respBody.flush();
+-	}
+-	
+-	public void getEventsById(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+-		final String serviceURL = getServiceURL(req);
+-		final Matcher m = UrlPatterns.SERVICE_GET_EVENTS_BY_ID.matcher(serviceURL);
+-		if(!m.matches()) {
+-			throw new IllegalArgumentException("regex didn't match!");
+-		}
+-		
+-		final String eventIDs = m.group("id");
+-		
+-		final EventList events = new EventList();
+-		final IEventDAO dao = getDAO();
+-		
+-		for(final String id : eventIDs.split("\\+")) {
+-			final long idNum = Long.parseLong(id);
+-			final Event event = dao.getEvent(idNum);
+-			events.addEvent(event);
+-		}
+-		
+-		resp.setStatus(HttpServletResponse.SC_OK);
+-		resp.setContentType(MimeTypes.APPLICATION_JSON);
+-
+-		final PrintWriter respBody = resp.getWriter();
+-		final String json = toJson(events);
+-		respBody.write(json);
+-		respBody.flush();
+-	}
+-	
+ 	@Override
+ 	protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+ 		
+ 		// we only have one POST method on the service, so no need to do URL-based routing
+ 		addEvent(req, resp);
+ 	}
+-	
+-	@Override
+-	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+-		final String serviceURL = getServiceURL(req);
+-		
+-		// route to proper service method
+-		if(UrlPatterns.SERVICE_GET_ALL_EVENTS.matcher(serviceURL).matches()) {
+-			getAllEvents(req, resp);
+-		}
+-		else if(UrlPatterns.SERVICE_GET_EVENTS_BY_ID.matcher(serviceURL).matches()) {
+-			getEventsById(req, resp);
+-		}
+-	}
+ }

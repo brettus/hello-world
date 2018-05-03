@@ -1,0 +1,66 @@
+diff --git a/src/main/java/com/example/dao/MemoryEventDAO.java b/src/main/java/com/example/dao/MemoryEventDAO.java
+index ec210cc..f5481ea 100644
+--- a/src/main/java/com/example/dao/MemoryEventDAO.java
++++ b/src/main/java/com/example/dao/MemoryEventDAO.java
+@@ -7,6 +7,7 @@ import java.util.Collections;
+ import java.util.Iterator;
+ import java.util.List;
+ 
++import com.example.exceptions.NotYetImplementedException;
+ import com.example.models.Event;
+ 
+ public class MemoryEventDAO implements IEventDAO
+@@ -115,23 +116,7 @@ public class MemoryEventDAO implements IEventDAO
+     @Override
+     public List<Event> getEventsByTag(final String... tags)
+     {
+-        final List<Event> events = new ArrayList<>();
+-
+-        if(tags.length > 0)
+-        {
+-            synchronized(MemoryEventDAO.events)
+-            {
+-                for(final Event event : MemoryEventDAO.events)
+-                {
+-                    if(event.getTags().containsAll(Arrays.asList(tags)))
+-                    {
+-                        events.add(event.copy());
+-                    }
+-                }
+-            }
+-        }
+-
+-        return events;
++        throw new NotYetImplementedException("MemoryEventDAO.getEventsByTag not yet implemented");
+     }
+ 
+     @Override
+diff --git a/src/main/java/com/example/services/EventService.java b/src/main/java/com/example/services/EventService.java
+index be079b2..8444610 100644
+--- a/src/main/java/com/example/services/EventService.java
++++ b/src/main/java/com/example/services/EventService.java
+@@ -22,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
+ 
+ import com.example.dao.IEventDAO;
+ import com.example.dao.MemoryEventDAO;
++import com.example.exceptions.NotYetImplementedException;
+ import com.example.models.ErrorMessage;
+ import com.example.models.Event;
+ import com.example.models.EventList;
+@@ -82,15 +83,7 @@ public class EventService extends BaseRestService {
+ 	@GET
+ 	@Path("/tag/{tag: \\w+(?:\\+\\w+)*}")
+ 	public Response getEventsByTag(@PathParam("tag") final String tagString) {
+-		final IEventDAO dao = new MemoryEventDAO();
+-		
+-		final List<Event> events = dao.getEventsByTag(tagString.split("\\+"));
+-		final EventList matchingEvents = new EventList(events);
+-		matchingEvents.sortEventsAscending();
+-		
+-		return Response
+-			.ok(makeEntity(matchingEvents))
+-			.build();
++		throw new NotYetImplementedException("getEventsByTag service not yet implemented");
+ 	}
+ 	
+ 	
